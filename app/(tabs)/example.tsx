@@ -1,7 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BorderRadius, Spacing } from '@/constants/theme';
-import { Link } from 'expo-router';
+import { BorderRadius, getShadow, Spacing } from '@/constants/theme';
 import { StyleSheet } from 'react-native';
 
 /**
@@ -24,7 +23,7 @@ export default function ExampleScreen() {
       {/* Color variants */}
       <ThemedText variant="default">Default text color</ThemedText>
       <ThemedText variant="secondary">Secondary text color</ThemedText>
-      <Link href="/example"><ThemedText variant="link">Link text color</ThemedText></Link>
+      <ThemedText variant="link">Link text color</ThemedText>
       <ThemedText variant="error">Error message</ThemedText>
       <ThemedText variant="success">Success message</ThemedText>
       <ThemedText variant="warning">Warning message</ThemedText>
@@ -37,17 +36,35 @@ export default function ExampleScreen() {
         Small secondary text
       </ThemedText>
 
-      {/* Secondary background */}
-      <ThemedView variant="secondary" style={styles.card}>
-        <ThemedText type="subtitle">Card Title</ThemedText>
+      {/* Secondary background with shadow */}
+      <ThemedView variant="secondary" shadow="md" style={styles.card}>
+        <ThemedText type="subtitle">Card with Medium Shadow</ThemedText>
         <ThemedText variant="secondary">
-          This is a card with secondary background
+          This is a card with secondary background and shadow
         </ThemedText>
+      </ThemedView>
+
+      {/* Different shadow sizes */}
+      <ThemedView shadow="sm" style={styles.card}>
+        <ThemedText type="bodySemibold">Small Shadow</ThemedText>
+      </ThemedView>
+
+      <ThemedView shadow="lg" style={styles.card}>
+        <ThemedText type="bodySemibold">Large Shadow</ThemedText>
+      </ThemedView>
+
+      <ThemedView shadow="xl" style={styles.card}>
+        <ThemedText type="bodySemibold">Extra Large Shadow</ThemedText>
       </ThemedView>
 
       {/* Using spacing constants */}
       <ThemedView style={styles.spacedContainer}>
         <ThemedText>Using theme spacing constants</ThemedText>
+      </ThemedView>
+
+      {/* Using getShadow helper in custom styles */}
+      <ThemedView style={styles.customShadowCard}>
+        <ThemedText>Card with custom shadow applied via StyleSheet</ThemedText>
       </ThemedView>
 
       {/* Manual color override (when needed) */}
@@ -77,5 +94,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+  },
+  customShadowCard: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    ...getShadow('lg'),
   },
 });

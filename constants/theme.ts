@@ -139,6 +139,73 @@ export const BorderRadius = {
   full: 9999,
 };
 
+/**
+ * Shadow system for both iOS and Android
+ * Note: React Native handles shadows differently on iOS vs Android
+ * - iOS: uses shadowColor, shadowOffset, shadowOpacity, shadowRadius
+ * - Android: uses elevation
+ */
+
+type IOSShadow = {
+  shadowColor: string;
+  shadowOffset: { width: number; height: number };
+  shadowOpacity: number;
+  shadowRadius: number;
+};
+
+type AndroidShadow = {
+  elevation: number;
+};
+
+export const Shadows = {
+  none: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.20,
+    shadowRadius: 3.0,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 5.0,
+    elevation: 8,
+  },
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8.0,
+    elevation: 12,
+  },
+} as const;
+
+/**
+ * Helper function to get platform-specific shadow styles
+ * Usage: ...getShadow('md')
+ * 
+ * Returns all shadow properties. On iOS, elevation is ignored.
+ * On Android, iOS shadow properties are ignored.
+ */
+export const getShadow = (size: keyof typeof Shadows) => {
+  return Shadows[size];
+};
+
 // Type for theme preference (to be used when implementing user preference)
 export type ThemePreference = 'light' | 'dark' | 'system';
 
