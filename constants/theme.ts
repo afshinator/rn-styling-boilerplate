@@ -140,67 +140,71 @@ export const BorderRadius = {
 };
 
 /**
- * Shadow system for both iOS and Android
- * Note: React Native handles shadows differently on iOS vs Android
- * - iOS: uses shadowColor, shadowOffset, shadowOpacity, shadowRadius
- * - Android: uses elevation
+ * Shadow system for both iOS and Android.
+ * * NOTE: For Web, the 'boxShadow' string property is provided to resolve
+ * the deprecation warning and use standard CSS shadows.
  */
 
-type IOSShadow = {
-  shadowColor: string;
-  shadowOffset: { width: number; height: number };
-  shadowOpacity: number;
-  shadowRadius: number;
+type ShadowProps = {
+  // Deprecated iOS/Web shadow properties, now optional:
+  shadowColor?: string;
+  shadowOffset?: { width: number; height: number };
+  shadowOpacity?: number;
+  shadowRadius?: number;
+  
+  elevation: number; // Android shadow property
+  boxShadow: string; // Web shadow property (CSS)
 };
 
-type AndroidShadow = {
-  elevation: number;
-};
-
-export const Shadows = {
+export const Shadows: Record<string, ShadowProps> = {
   none: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 0 },
+    // shadowOpacity: 0,
+    // shadowRadius: 0,
     elevation: 0,
+    boxShadow: 'none',
   },
   sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.18,
-    shadowRadius: 1.0,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.18,
+    // shadowRadius: 1.0,
     elevation: 2,
+    // CSS equivalent: offset-x | offset-y | blur-radius | color
+    boxShadow: '0px 1px 1px rgba(0, 0, 0, 0.18)',
   },
   md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.20,
-    shadowRadius: 3.0,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.20,
+    // shadowRadius: 3.0,
     elevation: 4,
+    boxShadow: '0px 2px 3px rgba(0, 0, 0, 0.20)',
   },
   lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 5.0,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowOpacity: 0.22,
+    // shadowRadius: 5.0,
     elevation: 8,
+    boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.22)',
   },
   xl: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8.0,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 6 },
+    // shadowOpacity: 0.25,
+    // shadowRadius: 8.0,
     elevation: 12,
+    boxShadow: '0px 6px 8px rgba(0, 0, 0, 0.25)',
   },
 } as const;
 
 /**
  * Helper function to get platform-specific shadow styles
  * Usage: ...getShadow('md')
- * 
- * Returns all shadow properties. On iOS, elevation is ignored.
- * On Android, iOS shadow properties are ignored.
+ * * This returns the full set of properties. React Native Web will automatically
+ * use 'boxShadow' on the web, while native platforms will use 'shadow*' and 'elevation'.
  */
 export const getShadow = (size: keyof typeof Shadows) => {
   return Shadows[size];
@@ -208,6 +212,3 @@ export const getShadow = (size: keyof typeof Shadows) => {
 
 // Type for theme preference (to be used when implementing user preference)
 export type ThemePreference = 'light' | 'dark' | 'system';
-
-// This will be used later when you implement AsyncStorage + TanStack Query
-export const THEME_STORAGE_KEY = '@app_theme_preference';
