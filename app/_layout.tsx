@@ -1,4 +1,5 @@
 import {
+  DarkTheme,
   DefaultTheme,
   ThemeProvider
 } from "@react-navigation/native";
@@ -8,9 +9,9 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
  
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { usePreferences } from "@/hooks/use-preference";
 import { ActivityIndicator, Platform, View } from "react-native";
-
 
 const queryClient = new QueryClient();
 
@@ -28,20 +29,16 @@ const LoadingGuard = () => {
 
 function RootLayoutContent() {
   const { data: prefs, isPending } = usePreferences();
+  const resolvedColorScheme = useColorScheme();
 
   // Loading Guard - show loading screen while prefs are fetched from AsyncStorage
   if (isPending || !prefs) {
-    return (
-      <LoadingGuard />
-    );
+    return <LoadingGuard />;
   }
 
-  // const theme = prefs.resolvedColorScheme === "dark" ? DarkTheme : DefaultTheme;
-  // const statusBarStyle =
-  //   prefs.resolvedColorScheme === "dark" ? "light" : "dark";
-console.log('what we got ', prefs)
-const theme=DefaultTheme
-const statusBarStyle = 'light'
+  const theme = resolvedColorScheme === "dark" ? DarkTheme : DefaultTheme;
+  const statusBarStyle = resolvedColorScheme === "dark" ? "light" : "dark";
+
   return (
     <ThemeProvider value={theme}>
       <Stack>
@@ -62,9 +59,8 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <RootLayoutContent />
       
-      {/* Conditionally render ReactQueryDevtools only on Web in development */}
       {Platform.OS === 'web' && process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools initialIsOpen={true} />
+        <ReactQueryDevtools initialIsOpen={false} />
       )}
     </QueryClientProvider>
   );

@@ -1,6 +1,7 @@
 // constants/misc.ts
 
 export type LightDarkMode = 'system' | 'light' | 'dark';
+export type ResolvedColorScheme = 'light' | 'dark';
 
 export interface UserPreferences {
   fontScale: number;
@@ -9,7 +10,8 @@ export interface UserPreferences {
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   fontScale: 1.0,
-  lightDarkMode: 'dark',
+  lightDarkMode: 'system',
 };
 
 export const PREFERENCES_STORAGE_KEY = 'Settings';
+export const PREFERENCES_QUERY_KEY = ['prefs'];  //  tanstack query
