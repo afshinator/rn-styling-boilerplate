@@ -2,6 +2,8 @@
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import Slider from '@react-native-community/slider';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,10 +13,24 @@ import { LightDarkMode } from '@/constants/misc';
 import { usePreferences, useUpdatePreferences } from '@/hooks/use-preference';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+// Configuration constants
+const FONT_SCALE_MIN = 0.5;
+const FONT_SCALE_MAX = 1.4;
+const FONT_SCALE_STEP = 0.1;
+const CONTAINER_PADDING = 16;
+const SLIDER_HEIGHT = 40;
+const BUTTON_BORDER_WIDTH = 2;
+
 export default function SettingsScreen() {
   const { data: preferences, isLoading } = usePreferences();
   const updatePreferences = useUpdatePreferences();
   const borderSelectedColor = useThemeColor({}, 'border');
+  const sliderThumbColor = useThemeColor({}, 'tint');
+  const sliderMinColor = useThemeColor({}, 'tint');
+  const sliderMaxColor = useThemeColor({}, 'border');
+
+  // Local state for slider value during drag
+  const [tempFontScale, setTempFontScale] = useState<number | null>(null);
 
   if (isLoading || !preferences) {
     return (
@@ -25,17 +41,7 @@ export default function SettingsScreen() {
   }
 
   const themeOptions: LightDarkMode[] = ['system', 'light', 'dark'] as const;
-  const fontScales = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3];
-  const currentFontIndex = fontScales.indexOf(preferences.fontScale);
-  const canDecrease = currentFontIndex > 0;
-  const canIncrease = currentFontIndex < fontScales.length - 1;
-
-  const handleFontScaleChange = (delta: number) => {
-    const newIndex = currentFontIndex + delta;
-    if (newIndex >= 0 && newIndex < fontScales.length) {
-      updatePreferences.mutate({ fontScale: fontScales[newIndex] });
-    }
-  };
+  const displayFontScale = tempFontScale ?? preferences.fontScale;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -82,63 +88,29 @@ export default function SettingsScreen() {
       <ThemedView style={styles.section}>
         <ThemedText type="subtitle">Font Size</ThemedText>
         <ThemedText variant="secondary" type="small" style={styles.sectionDescription}>
-          Adjust text size for better readability
+          Current size: {displayFontScale.toFixed(1)}x
         </ThemedText>
 
-        <View style={styles.fontScaleRow}>
-          <Pressable
-            onPress={() => handleFontScaleChange(-1)}
-            disabled={!canDecrease}
-            style={styles.fontScaleButton}
-          >
-            <ThemedView
-              shadow="sm"
-              style={[
-                styles.button,
-                styles.fontScaleButtonView,
-                !canDecrease && styles.disabledButton,
-              ]}
-            >
-              <ThemedText
-                type="title"
-                variant={canDecrease ? 'default' : 'secondary'}
-              >
-                −
-              </ThemedText>
-            </ThemedView>
-          </Pressable>
-
-          <ThemedView shadow="sm" style={[styles.button, styles.fontScaleValue]}>
-            <ThemedText type="small" variant="secondary">
-              Size
-            </ThemedText>
-            <ThemedText type="title">
-              {preferences.fontScale.toFixed(1)}x
-            </ThemedText>
-          </ThemedView>
-
-          <Pressable
-            onPress={() => handleFontScaleChange(1)}
-            disabled={!canIncrease}
-            style={styles.fontScaleButton}
-          >
-            <ThemedView
-              shadow="sm"
-              style={[
-                styles.button,
-                styles.fontScaleButtonView,
-                !canIncrease && styles.disabledButton,
-              ]}
-            >
-              <ThemedText
-                type="title"
-                variant={canIncrease ? 'default' : 'secondary'}
-              >
-                +
-              </ThemedText>
-            </ThemedView>
-          </Pressable>
-        </View>
+        <ThemedView style={styles.sliderContainer}>
+          <ThemedText type="small" variant="secondary">{FONT_SCALE_MIN}×</ThemedText>
+          <Slider
+            style={styles.slider}
+            minimumValue={FONT_SCALE_MIN}
+            maximumValue={FONT_SCALE_MAX}
+            step={FONT_SCALE_STEP}
+            value={preferences.fontScale}
+            onValueChange={(value) => setTempFontScale(Math.round(value / FONT_SCALE_STEP) * FONT_SCALE_STEP)}
+            onSlidingComplete={(value) => {
+              const rounded = Math.round(value / FONT_SCALE_STEP) * FONT_SCALE_STEP;
+              setTempFontScale(null);
+              updatePreferences.mutate({ fontScale: rounded });
+            }}
+            minimumTrackTintColor={sliderMinColor}
+            maximumTrackTintColor={sliderMaxColor}
+            thumbTintColor={sliderThumbColor}
+          />
+          <ThemedText type="small" variant="secondary">{FONT_SCALE_MAX}×</ThemedText>
+        </ThemedView>
       </ThemedView>
 
       {/* Preview */}
@@ -146,13 +118,13 @@ export default function SettingsScreen() {
         <ThemedText type="caption" variant="secondary">
           PREVIEW
         </ThemedText>
-        <ThemedText type="title" style={{ fontSize: 24 * preferences.fontScale }}>
+        <ThemedText type="title">
           Title Text
         </ThemedText>
-        <ThemedText type="body" style={{ fontSize: 16 * preferences.fontScale }}>
+        <ThemedText type="body">
           This is body text to preview your settings.
         </ThemedText>
-        <ThemedText type="small" variant="secondary" style={{ fontSize: 14 * preferences.fontScale }}>
+        <ThemedText type="small" variant="secondary">
           Small secondary text
         </ThemedText>
       </ThemedView>
@@ -162,7 +134,7 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: CONTAINER_PADDING,
   },
   title: {
     marginBottom: Spacing.lg,
@@ -185,28 +157,19 @@ const styles = StyleSheet.create({
   button: {
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
-    borderWidth: 2,
+    borderWidth: BUTTON_BORDER_WIDTH,
     borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fontScaleRow: {
+  sliderContainer: {
     flexDirection: 'row',
-    // gap: Spacing.sm,
-    // alignItems: 'stretch',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
-  fontScaleButton: {
+  slider: {
     flex: 1,
-  },
-  fontScaleButtonView: {
-    height: 90,
-  },
-  fontScaleValue: {
-    flex: 1.5,
-    gap: Spacing.xs,
-  },
-  disabledButton: {
-    opacity: 0.4,
+    height: SLIDER_HEIGHT,
   },
   preview: {
     padding: Spacing.sm,
