@@ -41,7 +41,13 @@ export default function SettingsScreen() {
   }
 
   const themeOptions: LightDarkMode[] = ['system', 'light', 'dark'] as const;
+  
+  // This is the font scale currently being displayed (live or saved)
   const displayFontScale = tempFontScale ?? preferences.fontScale;
+  
+  // Calculate the relative factor needed for ThemedText.
+  // Factor = (Desired Scale) / (Internal Base Scale)
+  const previewScaleFactor = displayFontScale / preferences.fontScale;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -115,16 +121,16 @@ export default function SettingsScreen() {
 
       {/* Preview */}
       <ThemedView variant="secondary" style={styles.preview}>
-        <ThemedText type="caption" variant="secondary">
+        <ThemedText type="caption" variant="secondary" propFontScale={previewScaleFactor}>
           PREVIEW
         </ThemedText>
-        <ThemedText type="title">
+        <ThemedText type="title" propFontScale={previewScaleFactor}>
           Title Text
         </ThemedText>
-        <ThemedText type="body">
+        <ThemedText type="body" propFontScale={previewScaleFactor}>
           This is body text to preview your settings.
         </ThemedText>
-        <ThemedText type="small" variant="secondary">
+        <ThemedText type="small" variant="secondary" propFontScale={previewScaleFactor}>
           Small secondary text
         </ThemedText>
       </ThemedView>
