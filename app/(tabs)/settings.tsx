@@ -1,11 +1,9 @@
-/**
- * Example Settings Screen
- * Shows how to use the preferences system
- */
+// settings.tsx
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BorderRadius, Spacing } from '@/constants/theme';
 
@@ -26,32 +24,43 @@ export default function SettingsScreen() {
     );
   }
 
-  const themeOptions: LightDarkMode[] = ['system', 'light', 'dark'];
+  const themeOptions: LightDarkMode[] = ['system', 'light', 'dark'] as const;
+  const fontScales = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3];
+  const currentFontIndex = fontScales.indexOf(preferences.fontScale);
+  const canDecrease = currentFontIndex > 0;
+  const canIncrease = currentFontIndex < fontScales.length - 1;
+
+  const handleFontScaleChange = (delta: number) => {
+    const newIndex = currentFontIndex + delta;
+    if (newIndex >= 0 && newIndex < fontScales.length) {
+      updatePreferences.mutate({ fontScale: fontScales[newIndex] });
+    }
+  };
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ThemedText type="large" style={styles.title}>
         Settings
       </ThemedText>
 
-      {/* Theme Selection */}
+      {/* Appearance */}
       <ThemedView style={styles.section}>
         <ThemedText type="subtitle">Appearance</ThemedText>
         <ThemedText variant="secondary" type="small" style={styles.sectionDescription}>
           Choose your preferred theme
         </ThemedText>
 
-        <ThemedView style={styles.optionsContainer}>
+        <View style={styles.buttonRow}>
           {themeOptions.map((option) => (
             <Pressable
               key={option}
               onPress={() => updatePreferences.mutate({ lightDarkMode: option })}
-              style={styles.pressable}
+              style={styles.buttonPressable}
             >
               <ThemedView
                 shadow="sm"
                 style={[
-                  styles.option,
+                  styles.button,
                   preferences.lightDarkMode === option && {
                     borderColor: borderSelectedColor,
                   },
@@ -66,42 +75,70 @@ export default function SettingsScreen() {
               </ThemedView>
             </Pressable>
           ))}
-        </ThemedView>
+        </View>
       </ThemedView>
 
       {/* Font Scale */}
       <ThemedView style={styles.section}>
         <ThemedText type="subtitle">Font Size</ThemedText>
         <ThemedText variant="secondary" type="small" style={styles.sectionDescription}>
-          Current scale: {preferences.fontScale.toFixed(1)}x
+          Adjust text size for better readability
         </ThemedText>
 
-        <ThemedView style={styles.optionsContainer}>
-          {[0.8, 0.9, 1.0, 1.1, 1.2, 1.3].map((scale) => (
-            <Pressable
-              key={scale}
-              onPress={() => updatePreferences.mutate({ fontScale: scale })}
-              style={styles.pressable}
+        <View style={styles.fontScaleRow}>
+          <Pressable
+            onPress={() => handleFontScaleChange(-1)}
+            disabled={!canDecrease}
+            style={styles.fontScaleButton}
+          >
+            <ThemedView
+              shadow="sm"
+              style={[
+                styles.button,
+                styles.fontScaleButtonView,
+                !canDecrease && styles.disabledButton,
+              ]}
             >
-              <ThemedView
-                shadow="sm"
-                style={[
-                  styles.option,
-                  preferences.fontScale === scale && {
-                    borderColor: borderSelectedColor,
-                  },
-                ]}
+              <ThemedText
+                type="title"
+                variant={canDecrease ? 'default' : 'secondary'}
               >
-                <ThemedText
-                  type="bodySemibold"
-                  variant={preferences.fontScale === scale ? 'default' : 'secondary'}
-                >
-                  {scale === 1.0 ? 'Default' : `${scale.toFixed(1)}x`}
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
-          ))}
-        </ThemedView>
+                −
+              </ThemedText>
+            </ThemedView>
+          </Pressable>
+
+          <ThemedView shadow="sm" style={[styles.button, styles.fontScaleValue]}>
+            <ThemedText type="small" variant="secondary">
+              Size
+            </ThemedText>
+            <ThemedText type="title">
+              {preferences.fontScale.toFixed(1)}x
+            </ThemedText>
+          </ThemedView>
+
+          <Pressable
+            onPress={() => handleFontScaleChange(1)}
+            disabled={!canIncrease}
+            style={styles.fontScaleButton}
+          >
+            <ThemedView
+              shadow="sm"
+              style={[
+                styles.button,
+                styles.fontScaleButtonView,
+                !canIncrease && styles.disabledButton,
+              ]}
+            >
+              <ThemedText
+                type="title"
+                variant={canIncrease ? 'default' : 'secondary'}
+              >
+                +
+              </ThemedText>
+            </ThemedView>
+          </Pressable>
+        </View>
       </ThemedView>
 
       {/* Preview */}
@@ -109,47 +146,72 @@ export default function SettingsScreen() {
         <ThemedText type="caption" variant="secondary">
           PREVIEW
         </ThemedText>
-        <ThemedText type="title">Title Text</ThemedText>
-        <ThemedText type="body">This is body text to preview your settings.</ThemedText>
-        <ThemedText type="small" variant="secondary">
+        <ThemedText type="title" style={{ fontSize: 24 * preferences.fontScale }}>
+          Title Text
+        </ThemedText>
+        <ThemedText type="body" style={{ fontSize: 16 * preferences.fontScale }}>
+          This is body text to preview your settings.
+        </ThemedText>
+        <ThemedText type="small" variant="secondary" style={{ fontSize: 14 * preferences.fontScale }}>
           Small secondary text
         </ThemedText>
       </ThemedView>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: Spacing.md,
+    padding: 16,
   },
   title: {
     marginBottom: Spacing.lg,
   },
   section: {
     marginBottom: Spacing.xl,
+    padding: Spacing.sm,
   },
   sectionDescription: {
     marginTop: Spacing.xs,
     marginBottom: Spacing.md,
   },
-  optionsContainer: {
+  buttonRow: {
+    flexDirection: 'row',
     gap: Spacing.sm,
   },
-  pressable: {
-    width: '100%',
+  buttonPressable: {
+    flex: 1,
   },
-  option: {
+  button: {
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     borderWidth: 2,
     borderColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fontScaleRow: {
+    flexDirection: 'row',
+    // gap: Spacing.sm,
+    // alignItems: 'stretch',
+  },
+  fontScaleButton: {
+    flex: 1,
+  },
+  fontScaleButtonView: {
+    height: 90,
+  },
+  fontScaleValue: {
+    flex: 1.5,
+    gap: Spacing.xs,
+  },
+  disabledButton: {
+    opacity: 0.4,
   },
   preview: {
-    padding: Spacing.md,
+    padding: Spacing.sm,
     borderRadius: BorderRadius.md,
     gap: Spacing.sm,
-    marginTop: Spacing.lg,
+    // marginTop: Spacing.lg,
   },
 });
